@@ -10,6 +10,20 @@
 #include <select_builder.hpp>
 #include <where_builder.hpp>
 
+//Svolge:
+//    q = tab.where("temperature" < 30).select("sensor_id", "humidity")
+
+//I funtori di source e sink li ho fatti a mano perché ancora non c'è il builder. 
+//Questo file dovrebbe essere quello generato dal generatore di codice a seguito del parsing.
+
+//I builder usano template per poter operare su ogni struct generato e richiedono una lambda con
+//  una certa firma (in base all'operazione).
+//La parte più complessa sarà probabilmente creare le lambda che danno la logica ai funtori
+//  nei builder. 
+
+//Quando ci saranno da fare gli operatori con TTL per evitare la crescità infinita dello stato
+//  sarà il builder a gestire la cosa mentre il generatore dovrà solo fare un file come questo.
+
 //struct dato dalla sorgente
 struct SensorInput {
     std::string sensor_id;
@@ -21,8 +35,6 @@ struct SensorInput {
 struct SelectedSensor {
     std::string sensor_id;
     double humidity;
-    //std::string temperature;
-    //scommentare i pezzi con temperature mostra la flessibilità della lambda
 };
 
 //funtore sorgente di SensorInput
@@ -110,6 +122,8 @@ int main() {
 
     //logica di filtraggio    
     auto where_logic = [](const SensorInput& in) -> bool {
+        //all'interno del Where ci sarà un oggetto espressione che va parsato in questa lambda
+
         return in.temperature < 30;
     };
 
@@ -121,10 +135,13 @@ int main() {
 
     //logica di selezione
     auto select_logic = [](const SensorInput& in) -> SelectedSensor {
+        //questa va inferita in base agli schemi di input e output
+        //la regola di base sarà di mappare attributo x in attributo x (con lo stesso nome)
+        //  che è quella applicata qua.
+    
         SelectedSensor out;
 		out.sensor_id = in.sensor_id;
 		out.humidity = in.humidity;
-        //out.temperature = "HOT";
 		return out;
     };
 

@@ -93,7 +93,6 @@ public:
     }
 };
 
-// --- SINK ---
 class Sink_Functor {
 public:
     void operator()(std::optional<JoinOutput> &input) {

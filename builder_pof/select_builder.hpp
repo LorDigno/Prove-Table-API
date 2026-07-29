@@ -6,7 +6,7 @@
 #include <windflow.hpp>
 
 //funtore che applica la logica della select
-template <typename InputT, typename OutputT>    //tipi generici di input/output
+template <typename InputT, typename OutputT>    
 class Select_Functor {
 private:
     std::function<OutputT(const InputT&)> filt_func;
@@ -18,6 +18,8 @@ public:
 
     //metodo chiamato dalla map    
     OutputT operator()(const InputT& input) const {
+        //la trasformazione è racchiusa nella lambda.
+        //il builder non fa altro che impacchettare tutto in modoo che sia coerente con WF.
         return filt_func(input);
     }
 };

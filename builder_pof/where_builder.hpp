@@ -6,6 +6,7 @@
 #include <windflow.hpp>
 
 //funtore che applica la logica della where
+//tranne che per le firme (e l'operatore istanziato) identico a quello della Select
 template <typename T>    
 class Where_Functor {
 private:
