@@ -1,0 +1,16 @@
+src/
+
+build/
+*.o
+*.out
+*.a
+*.so
+
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+WindFlow/
+
+fastflow/

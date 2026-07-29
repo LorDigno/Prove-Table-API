@@ -1,0 +1,43 @@
+    cmake_minimum_required(VERSION 3.10)
+    project(WindFlowTableAPI_Test VERSION 1.0)
+
+    set(CMAKE_CXX_STANDARD 17)
+    set(CMAKE_CXX_STANDARD_REQUIRED True)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -Wall")
+
+    find_package(Threads REQUIRED)
+
+    include_directories(${CMAKE_SOURCE_DIR}/fastflow)
+
+    include_directories(${CMAKE_SOURCE_DIR}/WindFlow/wf)
+    include_directories(${CMAKE_SOURCE_DIR}/builder_pof)
+    
+    #operazioni
+    add_executable(kg_group operazioni/kg_group.cpp)
+    add_executable(g_group operazioni/g_group.cpp)
+    add_executable(w_group operazioni/w_group.cpp)
+    add_executable(w_join operazioni/w_join.cpp)
+    add_executable(int_join operazioni/int_join.cpp)
+    add_executable(distinct operazioni/distinct.cpp)
+    add_executable(union_all operazioni/union_all.cpp)
+    add_executable(union operazioni/union.cpp)
+    add_executable(intersect operazioni/intersect.cpp)
+    #[=[ add_executable(order operazioni/order.cpp) ]=]
+
+    #builders
+    add_executable(builder_pof builder_pof/builder_pof.cpp)
+    
+    target_link_libraries(kg_group Threads::Threads)
+    target_link_libraries(g_group Threads::Threads)
+    target_link_libraries(w_group Threads::Threads)
+    target_link_libraries(w_join Threads::Threads)
+    target_link_libraries(int_join Threads::Threads)
+    target_link_libraries(distinct Threads::Threads)
+    target_link_libraries(union_all Threads::Threads)
+    target_link_libraries(union Threads::Threads)
+    target_link_libraries(intersect Threads::Threads)
+    #[=[ target_link_libraries(order Threads::Threads) ]=]
+
+    target_link_libraries(builder_pof Threads::Threads)
+    
+    
