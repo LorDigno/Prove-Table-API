@@ -7,33 +7,36 @@
 
 //funtore che applica la logica della where
 //tranne che per le firme (e l'operatore istanziato) identico a quello della Select
-template <typename T>    
+template <typename InputT>    
 class Where_Functor {
 private:
-    std::function<bool(const T&)> filt_func;
+    std::function<bool(const InputT&)> filt_func;
 
 public:
     //costruttore che associa la lambda
-    Where_Functor(std::function<bool(const T&)> func) 
+    Where_Functor(std::function<bool(const InputT&)> func) 
         : filt_func(func) {}   
 
     //metodo chiamato dal filter   
-    bool operator()(T& input){
+    bool operator()(InputT& input){
         return filt_func(input);
     }
 };
 
-//vero e proprio builder che gestisce i parametri e istanzia la Map
-template <typename T>
+//vero e proprio builder che gestisce i parametri e istanzia la Filter
+template <typename InputT, typename KeyT = std::string>
 class Where_Builder {
 private:
-    std::function<bool(const T&)> filt_func;
+    std::function<bool(const InputT&)> filt_func;
     std::string op_name = "Where_Operator";
     size_t parallelism = 1;
 
+    bool keyed = false;
+    std::function<KeyT(const InputT&)> key_func;
+
 public:
     //associa la lambda
-    Where_Builder(std::function<bool(const T&)> func)
+    Where_Builder(std::function<bool(const InputT&)> func)
         : filt_func(func) {}
 
     //da un nome all'operatore di Filter 
@@ -48,12 +51,23 @@ public:
         return *this;
     }
 
+    //stabilisce la funzione d'estrazione della chiave
+    Where_Builder& withKeyBy(std::function<KeyT(const InputT&)> k_func) {
+        this->key_func = k_func;
+        this->keyed = true;
+        return *this;
+    }
+
     //istanzia, con tutti i parametri dati, sul Select_Functor e rende la Map nativa 
     auto build() {
-        Where_Functor<T> functor(filt_func);
+        auto effective_key_func = keyed ? key_func : [](const InputT&) { return KeyT{}; };
+        size_t effective_parallelism = keyed ? parallelism : 1;
+
+        Where_Functor<InputT> functor(filt_func);
         return wf::Filter_Builder(functor)
             .withName(op_name)
-            .withParallelism(parallelism)
+            .withParallelism(effective_parallelism)
+            .withKeyBy(effective_key_func)
             .build();
     }
 };

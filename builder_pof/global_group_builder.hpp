@@ -25,7 +25,6 @@ class Global_Group_Functor{
 };
 
 
-
 //vero e proprio builder che gestisce i parametri e istanzia la Reduce/KeyedWinndows
 template <typename InputT, typename OutputT, typename KeyT = std::string>
 class Global_Group_Builder {
