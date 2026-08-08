@@ -18,7 +18,7 @@ public:
         : filt_func(func) {}   
 
     //metodo chiamato dal filter   
-    bool operator()(T& input) const {
+    bool operator()(T& input){
         return filt_func(input);
     }
 };

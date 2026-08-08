@@ -25,7 +25,8 @@
     #[=[ add_executable(order operazioni/order.cpp) ]=]
 
     #builders
-    add_executable(builder_pof builder_pof/builder_pof.cpp)
+    add_executable(basic_pof builder_pof/basic_pof.cpp)
+    add_executable(group_pof builder_pof/group_pof.cpp)
     
     target_link_libraries(kg_group Threads::Threads)
     target_link_libraries(g_group Threads::Threads)
@@ -38,6 +39,7 @@
     target_link_libraries(intersect Threads::Threads)
     #[=[ target_link_libraries(order Threads::Threads) ]=]
 
-    target_link_libraries(builder_pof Threads::Threads)
+    target_link_libraries(basic_pof Threads::Threads)
+    target_link_libraries(group_pof Threads::Threads)
     
     

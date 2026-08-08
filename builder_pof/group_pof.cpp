@@ -9,20 +9,8 @@
 #include <windflow.hpp>
 #include <select_builder.hpp>
 #include <where_builder.hpp>
-
-//Svolge:
-//    q = tab.where("temperature" < 30).select("sensor_id", "humidity")
-
-//I funtori di source e sink li ho fatti a mano perché ancora non c'è il builder. 
-//Questo file dovrebbe essere quello generato dal generatore di codice a seguito del parsing.
-
-//I builder usano template per poter operare su ogni struct generato e richiedono una lambda con
-//  una certa firma (in base all'operazione).
-//La parte più complessa sarà probabilmente creare le lambda che danno la logica ai funtori
-//  nei builder. 
-
-//Quando ci saranno da fare gli operatori con TTL per evitare la crescità infinita dello stato
-//  sarà il builder a gestire la cosa mentre il generatore dovrà solo fare un file come questo.
+#include <global_group_builder.hpp>
+#include <windowed_group_builder.hpp>
 
 //struct dato dalla sorgente
 struct SensorInput {
@@ -31,10 +19,57 @@ struct SensorInput {
     double humidity;
 };
 
-//struct di output della select
-struct SelectedSensor {
+//per l'estrazione della chiave
+struct KeyRecord{
     std::string sensor_id;
-    double humidity;
+
+    bool operator==(const KeyRecord& other) const {
+        return sensor_id == other.sensor_id;
+    }
+};
+
+//aggiungo l'hash per KeyRecord in std
+namespace std {
+    template <>
+    struct hash<KeyRecord> {
+        std::size_t operator()(const KeyRecord& k) const {
+            return std::hash<std::string>{}(k.sensor_id);
+        }
+    };
+}
+
+//output delle aggregazioni
+struct GroupOutput{
+    std::string sensor_id;
+    double temp_avg = 0.0;
+    int count = 0;
+    double sum = 0.0;
+
+    uint64_t win_id = 0;
+
+    GroupOutput() = default;
+
+    //costruttore necessario per fare le finestre non keyed
+    GroupOutput(uint64_t _id) 
+        : win_id(_id), count(0), sum(0.0), temp_avg(0.0) {}
+
+    //costruttore necessario per fare le finestre keyed    
+    GroupOutput(KeyRecord _key, uint64_t _id) 
+        : sensor_id(_key.sensor_id), win_id(_id), count(0), sum(0.0), temp_avg(0.0) {}    
+};
+
+//output a schermo
+class Sink_Functor {
+public:
+    void operator()(std::optional<GroupOutput> &input) {
+        if (input && input->count > 0) {
+            std::cout << "[MEDIA GROUP-BY] Sensore: " << input->sensor_id 
+                      //<< " | Finestra ID: " << input->win_id
+                      << " | Media Temp: " << input->temp_avg
+                      << " °C (su " << input->count << " letture)" 
+                      << std::endl;
+        }
+    }
 };
 
 //funtore sorgente di SensorInput
@@ -94,21 +129,6 @@ public:
     }
 };
 
-//stampa a schermo dei SelectedSensor
-class Sink_Functor {
-public:
-    void operator()(std::optional<SelectedSensor> &input) {
-        if (!input) {
-            std::cout << "[SINK] EOS Ricevuto." << std::endl;
-            return;
-        }
-        std::cout << "[SINK] Sensore: " << input->sensor_id 
-                  << " | Humidity: " << input->humidity
-                  //<< " | Temperature: " << input->temperature
-                  << std::endl;
-    }
-};
-
 int main() {
     Source_Functor src_func("sensor_stream_input.csv");
     Sink_Functor sink_func;
@@ -120,37 +140,52 @@ int main() {
         .withName("Source_CSV")
         .build();
 
-    //logica di filtraggio    
-    auto where_logic = [](const SensorInput& in) -> bool {
-        //all'interno del Where ci sarà un oggetto espressione che va parsato in questa lambda
+    //logica di raggruppamento e aggregazione
+    auto group_logic = [](const SensorInput& in, GroupOutput& out) -> void {
+        //chiave
+        out.sensor_id = in.sensor_id;
 
-        return in.temperature < 30;
+        //count e sum per calcolare la media
+        out.count += 1;
+        out.sum += in.temperature;
+        out.temp_avg = out.sum / out.count; 
     };
 
-    //where
-    auto where_op = Where_Builder<SensorInput>(where_logic)
-        .withName("Where_Sensor_Temperature")
-        .withParallelism(2)
+    auto group_key = [](const SensorInput& in) -> KeyRecord {
+        return KeyRecord({in.sensor_id});
+    };
+
+    // Global - Keyed
+    auto group_op = Global_Group_Builder<SensorInput, GroupOutput, KeyRecord>(group_logic)
+        .withName("group_by")
+        .withParallelism(3)
+        .withKeyBy(group_key)
         .build();
 
-    //logica di selezione
-    auto select_logic = [](const SensorInput& in) -> SelectedSensor {
-        //questa va inferita in base agli schemi di input e output
-        //la regola di base sarà di mappare attributo x in attributo x (con lo stesso nome)
-        //  che è quella applicata qua.
+    /* Global - NotKeyed
+    auto group_op = Global_Group_Builder<SensorInput, GroupOutput, KeyRecord>(group_logic)
+        .withName("group_by")
+        .withParallelism(3)
+        .build();
+    */
+
+    /* Windowed - NotKeyed
+    auto group_op = Windowed_Group_Builder<SensorInput, GroupOutput, KeyRecord>(group_logic)
+        .withName("group_by")
+        .withParallelism(3)
+        .withCBWindow(6, 3) 
+        .build();
+    */
+
+    /* Windowed - Keyed
+    auto group_op = Windowed_Group_Builder<SensorInput, GroupOutput, KeyRecord>(group_logic)
+        .withName("group_by")
+        .withParallelism(3)
+        .withTBWindow(5000000)  //5 secondi
+        .withKeyBy(group_key)
+        .build();
+    */    
     
-        SelectedSensor out;
-		out.sensor_id = in.sensor_id;
-		out.humidity = in.humidity;
-		return out;
-    };
-
-    //select
-    auto select_op = Select_Builder<SensorInput, SelectedSensor>(select_logic)
-        .withName("Select_Sensor_Humidity")
-        .withParallelism(2)
-        .build();
-
     //sink
     auto sink_op = wf::Sink_Builder(sink_func)
         .withName("Sink")
@@ -159,8 +194,7 @@ int main() {
 
     //topologia
     topology.add_source(source_op)
-            .add(where_op)
-            .add(select_op)
+            .add(group_op)
             .add_sink(sink_op);
 
     topology.run();

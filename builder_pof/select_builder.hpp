@@ -9,18 +9,19 @@
 template <typename InputT, typename OutputT>    
 class Select_Functor {
 private:
-    std::function<OutputT(const InputT&)> filt_func;
+    //funzione che svolge la selezione
+    std::function<OutputT(const InputT&)> map_func;
 
 public:
     //costruttore che associa la lambda
     Select_Functor(std::function<OutputT(const InputT&)> func) 
-        : filt_func(func) {}   
+        : map_func(func) {}   
 
     //metodo chiamato dalla map    
-    OutputT operator()(const InputT& input) const {
+    OutputT operator()(const InputT& input){
         //la trasformazione è racchiusa nella lambda.
         //il builder non fa altro che impacchettare tutto in modoo che sia coerente con WF.
-        return filt_func(input);
+        return map_func(input);
     }
 };
 
@@ -34,7 +35,7 @@ private:
 
 public:
     //associa la lambda
-    explicit Select_Builder(std::function<OutputT(const InputT&)> func)
+    Select_Builder(std::function<OutputT(const InputT&)> func)
         : proj_func(func) {}
 
     //da un nome all'operatore di Map    
