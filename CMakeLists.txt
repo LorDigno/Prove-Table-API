@@ -28,6 +28,7 @@
     add_executable(basic_pof builder_pof/basic_pof.cpp)
     add_executable(group_pof builder_pof/group_pof.cpp)
     add_executable(distinct_pof builder_pof/distinct_pof.cpp)
+    add_executable(join_pof builder_pof/join_pof.cpp)
     
     target_link_libraries(kg_group Threads::Threads)
     target_link_libraries(g_group Threads::Threads)
@@ -43,5 +44,6 @@
     target_link_libraries(basic_pof Threads::Threads)
     target_link_libraries(group_pof Threads::Threads)
     target_link_libraries(distinct_pof Threads::Threads)
+    target_link_libraries(join_pof Threads::Threads)
     
     

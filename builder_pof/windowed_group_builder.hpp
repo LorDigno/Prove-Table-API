@@ -120,8 +120,6 @@ public:
                 .withCBWindows(win_size, win_slide)
                 .build();
         }
-         
-        
     }
 };
 
