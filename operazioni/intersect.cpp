@@ -112,6 +112,7 @@ struct TupleState {
 class Intersect_FlatMap {
     std::unordered_map<SensorInput, TupleState> tuple_state;
 
+    
 public:
     void operator()(const TabRecord& in, wf::Shipper<SensorInput> &shipper){
         SensorInput sens = {in.sensor_id, in.temperature};
