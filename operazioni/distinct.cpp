@@ -121,7 +121,7 @@ int main() {
         .withKeyBy([](const SensorInput &in) -> SensorInput { return in;})
         .build();
 
-    auto sink_op = wf::Sink_Builder(snk_func).withParallelism(3).withName("Sink").build();
+    auto sink_op = wf::Sink_Builder(snk_func).withParallelism(1).withName("Sink").build();
 
     wf::PipeGraph topology("TableAPI_DistinctQuery", 
                            wf::Execution_Mode_t::DEFAULT, 
