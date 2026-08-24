@@ -159,7 +159,7 @@ int main() {
     auto group_op = Global_Group_Builder<SensorInput, GroupOutput, KeyRecord>(group_logic)
         .withName("group_by")
         .withParallelism(3)
-        .withKeyBy(group_key)
+        .withKeyBy(group_key)   
         .build();
 
     /* Global - NotKeyed

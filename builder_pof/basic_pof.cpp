@@ -122,14 +122,12 @@ int main() {
 
     //logica di filtraggio    
     auto where_logic = [](const SensorInput& in) -> bool {
-        //all'interno del Where ci sarà un oggetto espressione che va parsato in questa lambda
-
-        return in.temperature < 30;
+        return in.temperature < 10 && in.humidity < 20;
     };
 
     //where
     auto where_op = Where_Builder<SensorInput>(where_logic)
-        .withName("Where_Sensor_Temperature")
+        .withName("Where_Sensor")
         .withParallelism(2)
         .build();
 
