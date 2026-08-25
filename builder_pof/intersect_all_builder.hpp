@@ -68,6 +68,14 @@ public:
         Intersect_All_Functor<RealT> functor;
         return wf::FlatMap_Builder(functor)
             .withName(op_name)
+            .withParallelism(1)
+            .build();    
+    }
+
+    auto build_keyed(){
+        Intersect_All_Functor<RealT> functor;
+        return wf::FlatMap_Builder(functor)
+            .withName(op_name)
             .withParallelism(parallelism)
             .withKeyBy(key_func)
             .build();    

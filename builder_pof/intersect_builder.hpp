@@ -50,7 +50,6 @@ private:
     std::string op_name = "Intersect_Operator";
     size_t parallelism = 1;
 
-    bool keyed = false;
     std::function<RealT(const Tagged_Tuple<RealT>&)> key_func = [](const Tagged_Tuple<RealT>& in) { return in.data; };
 
 public:
@@ -69,6 +68,14 @@ public:
     }
 
     auto build(){
+        Intersect_Functor<RealT> functor;
+        return wf::FlatMap_Builder(functor)
+            .withName(op_name)
+            .withParallelism(parallelism)
+            .build();
+    }
+
+    auto build_keyed(){
         Intersect_Functor<RealT> functor;
         return wf::FlatMap_Builder(functor)
             .withName(op_name)

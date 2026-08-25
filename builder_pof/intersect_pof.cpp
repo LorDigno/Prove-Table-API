@@ -168,17 +168,18 @@ int main() {
         .withName("tagger1")
         .build();
 
-    /*    
+       
     auto intersect_op = Intersect_Builder<SensorInput>()
         .withName("intersect_op")
         .withParallelism(3)
-        .build();
-    */
+        .build_keyed();
 
+    /*
     auto intersect_all_op = Intersect_All_Builder<SensorInput>()
         .withName("intersect_op")
         .withParallelism(3)
-        .build();
+        .build_keyed();
+    */
 
     //sink
     auto sink_op = wf::Sink_Builder(sink_func)
@@ -193,8 +194,8 @@ int main() {
     std::vector<wf::MultiPipe*> branches = {&pipe1, &pipe2};
     auto* merged_pipe = wf::merge_multipipes_func(&topology, branches);
 
-    //merged_pipe->add(intersect_op).add_sink(sink_op);
-    merged_pipe->add(intersect_all_op).add_sink(sink_op);
+    merged_pipe->add(intersect_op).add_sink(sink_op);
+    //merged_pipe->add(intersect_all_op).add_sink(sink_op);
 
     topology.run();
     return 0;
