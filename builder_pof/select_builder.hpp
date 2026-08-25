@@ -26,15 +26,12 @@ public:
 };
 
 //vero e proprio builder che gestisce i parametri e istanzia la Map
-template <typename InputT, typename OutputT, typename KeyT = std::string>
+template <typename InputT, typename OutputT>
 class Select_Builder {
 private:
     std::function<OutputT(const InputT&)> proj_func;
     std::string op_name = "Select_Operator";
     size_t parallelism = 1;
-
-    bool keyed = false;
-    std::function<KeyT(const InputT&)> key_func;
 
 public:
     //associa la lambda
@@ -53,22 +50,11 @@ public:
         return *this;
     }
 
-    //stabilisce la funzione d'estrazione della chiave
-    Select_Builder& withKeyBy(std::function<KeyT(const InputT&)> k_func) {
-        this->key_func = k_func;
-        this->keyed = true;
-        return *this;
-    }
-
     auto build() {
-        auto effective_key_func = keyed ? key_func : [](const InputT&) { return KeyT{}; };
-        size_t effective_parallelism = keyed ? parallelism : 1;
-
         Select_Functor<InputT, OutputT> functor(proj_func);
         return wf::Map_Builder(functor)
             .withName(op_name)
-            .withParallelism(effective_parallelism)
-            .withKeyBy(effective_key_func)
+            .withParallelism(parallelism)
             .build();
     }
 };

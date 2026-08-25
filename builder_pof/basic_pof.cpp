@@ -122,7 +122,7 @@ int main() {
 
     //logica di filtraggio    
     auto where_logic = [](const SensorInput& in) -> bool {
-        return in.temperature < 10 && in.humidity < 20;
+        return in.temperature < 30 && in.humidity < 50;
     };
 
     //where
