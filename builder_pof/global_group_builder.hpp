@@ -66,13 +66,22 @@ public:
         //aggregazione globale via Reduce
         Global_Group_Functor<InputT, OutputT> functor(agg_func);
 
-        auto effective_key_func = keyed ? key_func : [](const InputT&) { return KeyT{}; };
-        size_t effective_parallelism = keyed ? parallelism : 1;
+        return wf::Reduce_Builder(functor)
+            .withName(op_name)
+            .withParallelism(1)
+            .build();
+    }
+
+    auto build_keyed(){
+        assert(keyed);
+
+        //aggregazione globale via Reduce
+        Global_Group_Functor<InputT, OutputT> functor(agg_func);
 
         return wf::Reduce_Builder(functor)
             .withName(op_name)
-            .withParallelism(effective_parallelism)
-            .withKeyBy(effective_key_func)
+            .withParallelism(parallelism)
+            .withKeyBy(key_func)
             .build();
     }
 };

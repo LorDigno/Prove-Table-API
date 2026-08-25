@@ -51,15 +51,22 @@ public:
     }
 
     auto build() {
+        int effective_parallelism = 1;
         Distinct_Functor<InputT> functor;
-
-        auto effective_key_func = keyed ? key_func : [](const InputT&) { return KeyT{}; };
-        size_t effective_parallelism = keyed ? parallelism : 1;
-
         return wf::Filter_Builder(functor)
             .withName(op_name)
             .withParallelism(effective_parallelism)
-            .withKeyBy(effective_key_func)
+            .build();
+    }
+
+    auto build_keyed() {
+        assert(keyed);
+
+        Distinct_Functor<InputT> functor;
+        return wf::Filter_Builder(functor)
+            .withName(op_name)
+            .withParallelism(parallelism)
+            .withKeyBy(key_func)
             .build();
     }
 };

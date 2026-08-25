@@ -179,7 +179,7 @@ int main() {
         .withName("distinct")
         .withParallelism(2)     //è senza chiave quindi per forza
         .withKeyBy(distinct_key)
-        .build();
+        .build_keyed();
 
     /*distinct Not-Keyed su tutta la tupla
     auto distinct_op = Distinct_Builder<SelectedSensor>()
