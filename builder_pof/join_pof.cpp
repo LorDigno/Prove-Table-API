@@ -147,7 +147,7 @@ int main() {
         .withParallelism(3)
         .withKeyBy(join_key)
         .withTBWindow(4000000, 2000000)
-        .build();
+        .build_keyed();
 
     /*IntervalJoin Keyed
     auto int_join_op = Table_Interval_Join_Builder<SensorInput, SensorInput, std::string>(

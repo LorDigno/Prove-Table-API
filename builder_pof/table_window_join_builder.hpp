@@ -70,15 +70,39 @@ public:
     auto build() {
         assert(windowed && "Errore: Impossibile creare Window_Join_Operator senza definire una finestra! Invocare conTBWindow().");
 
-        auto effective_key_func = keyed ? key_func : [](const InputT&) { return KeyT{}; };
-        size_t effective_parallelism = keyed ? parallelism : 1;
+        Join_Functor<InputT, OutputT> functor(join_func);
+
+        auto builder = wf::Window_Join_Builder(functor)
+            .withName(op_name)
+            .withParallelism(1)
+            .withDPMode();
+
+        if (win_size == win_slide) {
+            //tumble window
+            return builder
+                .withTumblingWindows(std::chrono::microseconds(win_size))
+                .build();
+        } else {
+            //sliding window
+            return builder
+                .withSlidingWindows(
+                    std::chrono::microseconds(win_size), 
+                    std::chrono::microseconds(win_slide)
+                )
+                .build();
+        }
+    }
+
+    auto build_keyed() {
+        assert(keyed);
+        assert(windowed && "Errore: Impossibile creare Window_Join_Operator senza definire una finestra! Invocare conTBWindow().");
 
         Join_Functor<InputT, OutputT> functor(join_func);
 
         auto builder = wf::Window_Join_Builder(functor)
             .withName(op_name)
-            .withParallelism(effective_parallelism)
-            .withKeyBy(effective_key_func)
+            .withParallelism(parallelism)
+            .withKeyBy(key_func)
             .withKPMode();
 
         if (win_size == win_slide) {
