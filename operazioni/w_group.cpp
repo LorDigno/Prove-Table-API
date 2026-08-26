@@ -131,7 +131,7 @@ int main(int argc, char* argv[]) {
                 return input.sensor_id;
             }
         )
-        .withTBWindows(std::chrono::microseconds(60000000), std::chrono::microseconds(60000000))
+        .withTBWindows(std::chrono::microseconds(1000000), std::chrono::microseconds(1000000))
         .build();
 
     //sink

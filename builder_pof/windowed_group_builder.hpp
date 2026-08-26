@@ -100,13 +100,36 @@ public:
         //aggregazione windowed via KeyedWindows
         Windowed_Group_Functor<InputT, OutputT> functor(agg_func);
 
-        auto effective_key_func = keyed ? key_func : [](const InputT&) { return KeyT{}; };
+        if (win_type == WindowType::TIME_BASED) {
+            return wf::Keyed_Windows_Builder(functor)
+                .withName(op_name)
+                .withParallelism(1)
+                .withTBWindows(
+                    std::chrono::microseconds(win_size), 
+                    std::chrono::microseconds(win_slide)
+                )
+                .build();
+        } else {
+            return wf::Keyed_Windows_Builder(functor)
+                .withName(op_name)
+                .withParallelism(1)
+                .withCBWindows(win_size, win_slide)
+                .build();
+        }
+    }
+
+    auto build_keyed(){
+        assert(keyed);
+        assert(windowed && "Errore: Impossibile creare Windowed_Group_Operator senza definire una finestra! Invocare conTBWindow() o conCBWindow().");
+
+        //aggregazione windowed via KeyedWindows
+        Windowed_Group_Functor<InputT, OutputT> functor(agg_func);
 
         if (win_type == WindowType::TIME_BASED) {
             return wf::Keyed_Windows_Builder(functor)
                 .withName(op_name)
                 .withParallelism(parallelism)
-                .withKeyBy(effective_key_func)
+                .withKeyBy(key_func)
                 .withTBWindows(
                     std::chrono::microseconds(win_size), 
                     std::chrono::microseconds(win_slide)
@@ -116,7 +139,7 @@ public:
             return wf::Keyed_Windows_Builder(functor)
                 .withName(op_name)
                 .withParallelism(parallelism)
-                .withKeyBy(effective_key_func)
+                .withKeyBy(key_func)
                 .withCBWindows(win_size, win_slide)
                 .build();
         }

@@ -155,12 +155,13 @@ int main() {
         return KeyRecord({in.sensor_id});
     };
 
-    // Global - Keyed
+    /* Global - Keyed
     auto group_op = Global_Group_Builder<SensorInput, GroupOutput, KeyRecord>(group_logic)
         .withName("group_by")
         .withParallelism(3)
         .withKeyBy(group_key)   
         .build_keyed();
+    */
 
     /* Global - NotKeyed
     auto group_op = Global_Group_Builder<SensorInput, GroupOutput, KeyRecord>(group_logic)
@@ -177,14 +178,13 @@ int main() {
         .build();
     */
 
-    /* Windowed - Keyed
+    //Windowed - Keyed
     auto group_op = Windowed_Group_Builder<SensorInput, GroupOutput, KeyRecord>(group_logic)
         .withName("group_by")
         .withParallelism(3)
         .withTBWindow(5000000)  //5 secondi
         .withKeyBy(group_key)
-        .build();
-    */    
+        .build_keyed();  
     
     //sink
     auto sink_op = wf::Sink_Builder(sink_func)
