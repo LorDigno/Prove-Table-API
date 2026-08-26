@@ -142,21 +142,22 @@ int main() {
     };
 
     //WindowJoin Keyed
+    /*
     auto win_join_op = Table_Window_Join_Builder<SensorInput, SensorInput, std::string>(join_logic)
         .withName("win_join")
         .withParallelism(3)
         .withKeyBy(join_key)
         .withTBWindow(4000000, 2000000)
         .build_keyed();
+    */
 
-    /*IntervalJoin Keyed
+    //IntervalJoin Keyed
     auto int_join_op = Table_Interval_Join_Builder<SensorInput, SensorInput, std::string>(
             join_logic, -3000000, 3000000
         ).withName("int_join")
         .withKeyBy(join_key)
         .withParallelism(3)
-        .build();
-    */    
+        .build_keyed();
 
     //sink
     auto sink_op = wf::Sink_Builder(sink_func)
@@ -171,8 +172,8 @@ int main() {
     std::vector<wf::MultiPipe*> branches = {&pipe1, &pipe2};
     auto* merged_pipe = wf::merge_multipipes_func(&topology, branches);
 
-    //merged_pipe->add(int_join_op).add_sink(sink_op);
-    merged_pipe->add(win_join_op).add_sink(sink_op);
+    merged_pipe->add(int_join_op).add_sink(sink_op);
+    //merged_pipe->add(win_join_op).add_sink(sink_op);
 
     topology.run();
     return 0;

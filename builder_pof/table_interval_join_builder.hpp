@@ -65,14 +65,26 @@ public:
     }
 
     auto build() {
-        auto effective_key_func = keyed ? key_func : [](const InputT&) { return KeyT{}; };
-        size_t effective_parallelism = keyed ? parallelism : 1;
+        Interval_Functor<InputT, OutputT> functor(join_func);
+        return wf::Interval_Join_Builder(functor)
+            .withName(op_name)
+            .withParallelism(1)
+            .withDPMode()
+            .withBoundaries(
+                std::chrono::microseconds(lower_bound), 
+                std::chrono::microseconds(upper_bound)
+            )
+            .build();
+    }
+
+    auto build_keyed() {
+        assert(keyed);
 
         Interval_Functor<InputT, OutputT> functor(join_func);
         return wf::Interval_Join_Builder(functor)
             .withName(op_name)
-            .withParallelism(effective_parallelism)
-            .withKeyBy(effective_key_func)
+            .withParallelism(parallelism)
+            .withKeyBy(key_func)
             .withKPMode()
             .withBoundaries(
                 std::chrono::microseconds(lower_bound), 
