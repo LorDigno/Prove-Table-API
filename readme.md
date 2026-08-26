@@ -6,6 +6,8 @@ Sono state eseguite e testate, il resto dell'API cercherà di rendere generali g
 In builder_pof/ sono presenti degli header cpp che incpsulano dei funtori che implementano le operazioni relazionali così da diminuire la quantità di codice da generare.
 I builder tendono ad usare una sintassi simile a quella dei builder nativi con un paio di eccezioni.
 
+Una mancanza importante sono le sorgenti e i pozzi che in tutti i test sono stati implementati a mano. Onestamente non vedo molta altre opzioni se non restringere il formato specifico dei file da parsare ma mi sembra un'imposizione abbastanza forte quindi per ora non ci sono.
+
 Tutti i builder usano dei template in cui vanno inseriti gli struct di input, output o di keyBy se necessari.
 
 Molti builder richiedono in input una lambda che implementi effettivamente la logica dell'operatore, ognuno richiede una firma specifica compatibile col funtore scritto secondo le firme richieste dagli operatori nativi.
