@@ -172,7 +172,7 @@ int main() {
     std::vector<wf::MultiPipe*> branches = {&pipe1, &pipe2};
     auto* merged_pipe = wf::merge_multipipes_func(&topology, branches);
 
-    merged_pipe->add(int_join_op).add_sink(sink_op);
+    (*merged_pipe).add(int_join_op).add_sink(sink_op);
     //merged_pipe->add(win_join_op).add_sink(sink_op);
 
     topology.run();
