@@ -71,7 +71,7 @@ public:
         Intersect_Functor<RealT> functor;
         return wf::FlatMap_Builder(functor)
             .withName(op_name)
-            .withParallelism(parallelism)
+            .withParallelism(1)
             .build();
     }
 

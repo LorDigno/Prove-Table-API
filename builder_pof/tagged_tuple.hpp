@@ -4,7 +4,7 @@
 //wrapper per le tuple con tag di provenienza
 template <typename T>
 struct Tagged_Tuple {
-    T data;
+    T& data;
     int tag; // 0 = left, 1 = right
 
     Tagged_Tuple() = default;

@@ -13,7 +13,7 @@ private:
 
 public:
     //costruttore che associa la lambda
-    Where_Functor(std::function<bool(const InputT&)> func) 
+    Where_Functor(std::function<bool(const InputT&)> func)   
         : filt_func(func) {}   
 
     //metodo chiamato dal filter   
