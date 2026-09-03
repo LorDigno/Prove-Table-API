@@ -8,6 +8,8 @@
 #include <unordered_set>
 #include <windflow.hpp>
 #include <table_source_builder.hpp>
+#include <table_sink_builder.hpp>
+#include <state_map.hpp>
 
 //struct dato dalla sorgente
 struct SensorInput {
@@ -16,31 +18,14 @@ struct SensorInput {
     double humidity;
 };
 
-//stampa a schermo
-class Sink_Functor {
-public:
-    void operator()(std::optional<SensorInput> &input) {
-        if (!input) {
-            std::cout << "[SINK] EOS Ricevuto." << std::endl;
-            return;
-        }
-        std::cout << "[SINK] Sensore: " << input->sensor_id 
-                  << " | Humidity: " << input->humidity
-                  << " | Temperature: " << input->temperature
-                  << std::endl;
-    }
-};
-
 int main() {
     std::string filepath = "sensor_stream_input.csv";
 
-    Sink_Functor sink_func;
-
     wf::PipeGraph topology(
         "TableAPI_PoC", 
-        wf::Execution_Mode_t::DEFAULT, 
-        wf::Time_Policy_t::EVENT_TIME
-        //wf::Time_Policy_t::INGRESS_TIME
+        wf::Execution_Mode_t::DEFAULT
+        //,wf::Time_Policy_t::EVENT_TIME
+        //,wf::Time_Policy_t::INGRESS_TIME
     );
 
     auto source_logic = [](const std::string& line, SensorInput& record, uint64_t& timestamp){
@@ -71,13 +56,21 @@ int main() {
 
     auto source_op = Table_Source_Builder<SensorInput>(filepath, source_logic)
         .withName("Sensor_Source")
-        .withTimestamp()
-        .withWatermarkDelay(1000000) //un secondo
+        .withHeader()
+        //.withWatermarkDelay(1000000) //un secondo
         .build();
 
+    //logica di stampa ad output
+    auto sink_logic = [](const SensorInput& record, std::ostream& os) {
+        os << record.sensor_id << ","
+        << record.temperature << ","
+        << record.humidity;
+    };   
+
     //sink
-    auto sink_op = wf::Sink_Builder(sink_func)
-        .withName("Sink")
+    auto sink_op = Table_Sink_Builder<SensorInput>("sensor_output.csv", sink_logic)
+        .withName("Sensor_Sink")
+        .withHeader("sensor_id, temperature, humidity")
         .withParallelism(1)
         .build();
 

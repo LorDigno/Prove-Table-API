@@ -24,23 +24,23 @@ class Source_Functor {
 
     private:
         std::string file_path;
+        bool header_skip;
 
         //funzione che data una riga la parsa, passata come una lambda
         ParserFn parser_lambda;
 
-        //flag per gli shipper
-        bool has_timestamp;
-        bool has_watermark;
+        //flag per lo shipper
+        bool event_time;
 
         //delay di watermarking
         uint64_t delay; 
 
     public:
-        Source_Functor(const std::string& path, ParserFn pars, bool timestamp, bool watermark, uint64_t del) 
+        Source_Functor(const std::string& path, bool head, ParserFn pars, bool ev, uint64_t del) 
             : file_path(path),
+            header_skip(head),
             parser_lambda(pars),
-            has_timestamp(timestamp),
-            has_watermark(watermark),
+            event_time(ev),
             delay(del) {}
     
         void operator()(wf::Source_Shipper<TupleT> &shipper) {
@@ -50,8 +50,13 @@ class Source_Functor {
                 return;
             }
 
-            //ciclo di lettura delle righe del file
             std::string line;
+            if(header_skip){
+                //salto la prima riga se c'è l'header
+                std::getline(file, line);
+            }
+
+            //ciclo di lettura delle righe del file
             while (std::getline(file, line)) {
                 if (line.empty() || line.front() == '\r') continue;
 
@@ -60,16 +65,13 @@ class Source_Functor {
 
                 parser_lambda(line, tuple, timestamp);
 
-                if( has_timestamp){
+                if(event_time){
+                    uint64_t wm = (timestamp >= delay) ? (timestamp - delay) : 0;
                     shipper.pushWithTimestamp(tuple, timestamp);
+                    shipper.setNextWatermark(wm);
                 }
                 else{
                     shipper.push(tuple);
-                } 
-
-                if(has_watermark){
-                    uint64_t wm = (timestamp >= delay) ? (timestamp - delay) : 0;
-                    shipper.setNextWatermark(wm);
                 }
             }
         }
@@ -87,10 +89,12 @@ class Table_Source_Builder{
         //filepath da leggere
         std::string& filepath;
 
-        //flag sulle politiche temporali
-        bool has_timestamp = false;     //INGRESS_TIME ed EVENT_TIME
-        bool has_watermark = false;     //EVENT_TIME
-        uint64_t delay = 0;             //delay per il watermark in EVENT_TIME
+        //se skippare l'header
+        bool header = false;
+
+        //attributi per la politica EVENT_TIME
+        bool event_time = false;     
+        uint64_t delay = 0;             
 
         std::string op_name = "TableSource_Operator";
 
@@ -103,23 +107,23 @@ class Table_Source_Builder{
             return *this;
         }
 
-        Table_Source_Builder& withTimestamp(){
-            this->has_timestamp = true;
+        Table_Source_Builder& withWatermarkDelay(uint64_t delay){
+            this->event_time = true;
+            this->delay = delay;
             return *this;
         }
 
-        Table_Source_Builder& withWatermarkDelay(uint64_t delay){
-            this->has_watermark = true;
-            this->delay = delay;
+        Table_Source_Builder& withHeader(){
+            this->header = true;
             return *this;
         }
 
         auto build(){
             Source_Functor<TupleT> functor = Source_Functor<TupleT>(
                 filepath,
+                header,
                 parser_lambda,
-                has_timestamp,
-                has_watermark,
+                event_time,
                 delay
             );
 
