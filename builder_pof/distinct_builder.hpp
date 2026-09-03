@@ -1,9 +1,10 @@
 #ifndef DISTINCT_BUILDER_HPP
-#define DISTINCT_HPP
+#define DISTINCT_BUILDER_HPP
 
 #include <string>
 #include <functional>
 #include <windflow.hpp>
+#include <chrono>
 
 //funtore utilizzato dalla filter
 template <typename InputT>
@@ -12,7 +13,6 @@ class Distinct_Functor{
         std::unordered_set<InputT> seen;
 
     public:
-        //costruttore vuoto?
         Distinct_Functor() {} 
 
         //metodo chiamato dalla filter   

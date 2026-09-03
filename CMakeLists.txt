@@ -30,6 +30,8 @@
     add_executable(distinct_pof builder_pof/distinct_pof.cpp)
     add_executable(join_pof builder_pof/join_pof.cpp)
     add_executable(intersect_pof builder_pof/intersect_pof.cpp)
+    add_executable(state_cleaning_pof builder_pof/state_cleaning_pof.cpp)
+    add_executable(source_pof builder_pof/source_pof.cpp)
     
     target_link_libraries(kg_group Threads::Threads)
     target_link_libraries(g_group Threads::Threads)
@@ -47,5 +49,7 @@
     target_link_libraries(distinct_pof Threads::Threads)
     target_link_libraries(join_pof Threads::Threads)
     target_link_libraries(intersect_pof Threads::Threads)
+    target_link_libraries(state_cleaning_pof Threads::Threads)
+    target_link_libraries(source_pof Threads::Threads)
     
     
