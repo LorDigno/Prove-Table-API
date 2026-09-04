@@ -166,7 +166,7 @@ class Table_Source_Builder{
         ParserFn parser_lambda;
 
         //filepath da leggere
-        std::string& filepath;
+        std::string filepath;
 
         //se skippare l'header
         bool header = false;
@@ -179,7 +179,7 @@ class Table_Source_Builder{
         std::string op_name = "TableSource_Operator";
 
     public: 
-        Table_Source_Builder(std::string& path, ParserFn parser)
+        Table_Source_Builder(const std::string& path, ParserFn parser)
             :   parser_lambda(parser), filepath(path) {}
 
         Table_Source_Builder& withName(const std::string& name) {
@@ -205,11 +205,6 @@ class Table_Source_Builder{
 
         Table_Source_Builder& withHeader(){
             this->header = true;
-            return *this;
-        }
-
-        Table_Source_Builder& withOrderedInput(){
-            this->ordered = true;
             return *this;
         }
 

@@ -59,11 +59,6 @@ struct GroupOutput{
 };
 
 int main() {
-    //disordinato
-    //std::string filepath = "sensor_real_stream.csv";
-    //ordinato
-    std::string filepath = "sensor_stream_input.csv";
-
     wf::PipeGraph topology(
         "TableAPI_PoC", 
         wf::Execution_Mode_t::DEFAULT
@@ -87,7 +82,7 @@ int main() {
         record.humidity = parse_DOUBLE(token);
     };
 
-    auto source_op = Table_Source_Builder<SensorInput>(filepath, source_logic)
+    auto source_op = Table_Source_Builder<SensorInput>("sensor_stream_input.csv", source_logic)
         .withName("Sensor_Source")
         .withHeader()
         //versione ordinata

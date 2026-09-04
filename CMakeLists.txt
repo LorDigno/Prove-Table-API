@@ -8,9 +8,9 @@
     find_package(Threads REQUIRED)
 
     include_directories(${CMAKE_SOURCE_DIR}/fastflow)
-
     include_directories(${CMAKE_SOURCE_DIR}/WindFlow/wf)
     include_directories(${CMAKE_SOURCE_DIR}/builder_pof)
+    include_directories(${CMAKE_SOURCE_DIR}/test_queries)
     
     #operazioni
     add_executable(kg_group operazioni/kg_group.cpp)
@@ -32,6 +32,9 @@
     add_executable(intersect_pof builder_pof/intersect_pof.cpp)
     add_executable(state_cleaning_pof builder_pof/state_cleaning_pof.cpp)
     add_executable(source_pof builder_pof/source_pof.cpp)
+
+    #test
+    add_executable(avg_cold_test test_queries/avg_cold_temperature_main.cpp)
     
     target_link_libraries(kg_group Threads::Threads)
     target_link_libraries(g_group Threads::Threads)
@@ -51,5 +54,7 @@
     target_link_libraries(intersect_pof Threads::Threads)
     target_link_libraries(state_cleaning_pof Threads::Threads)
     target_link_libraries(source_pof Threads::Threads)
+
+    target_link_libraries(avg_cold_test Threads::Threads)
     
     
