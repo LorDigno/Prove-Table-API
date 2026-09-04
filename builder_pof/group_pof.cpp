@@ -62,7 +62,7 @@ struct GroupOutput{
 class Sink_Functor {
 public:
     void operator()(std::optional<GroupOutput> &input) {
-        if (input && input->count > 0) {
+        if (input) {
             std::cout << "[MEDIA GROUP-BY] Sensore: " << input->sensor_id 
                       //<< " | Finestra ID: " << input->win_id
                       << " | Media Temp: " << input->temp_avg
